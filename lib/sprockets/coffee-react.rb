@@ -20,11 +20,39 @@ module Sprockets
       end
     end
 
-    def self.install(environment = ::Sprockets)
-      environment.register_preprocessor 'application/javascript', Sprockets::CoffeeReact
-      environment.register_postprocessor 'application/javascript', Sprockets::CoffeeReactPostprocessor
-      environment.register_engine '.cjsx', Sprockets::CoffeeReactScript
-      environment.register_engine '.js.cjsx', Sprockets::CoffeeReactScript
+    def self.call(input)
+      result = ::CoffeeReact.transform input[:data]
+      { data: result }
+    end
+
+    def self.install(env = ::Sprockets)
+      # Sprockets 3 & 4 support
+      if env.respond_to? :register_transformer
+        # Ensure CoffeeScript is all set up
+        unless env.mime_types['text/coffeescript']
+          env.register_mime_type 'text/coffeescript', extensions: ['.coffee', '.js.coffee']
+          env.register_transformer 'text/coffeescript', 'application/javascript', Sprockets::CoffeeScriptProcessor
+          env.register_preprocessor 'text/coffeescript', Sprockets::DirectiveProcessor.new(comments: ["#", ["###", "###"]])
+        end
+
+        # CJSX -> CoffeeScript
+        env.register_mime_type 'text/coffeescript+cjsx', extensions: ['.coffee.cjsx']
+        env.register_transformer 'text/coffeescript+cjsx', 'text/coffeescript', Sprockets::CoffeeReact
+
+        # CJSX -> JavaScript
+        env.register_mime_type 'application/javascript+cjsx', extensions: ['.js.cjsx', '.cjsx']
+        env.register_transformer 'application/javascript+cjsx', 'application/javascript', Sprockets::CoffeeReactScript
+
+        # Little bit of prettifying
+        env.register_postprocessor 'application/javascript', Sprockets::CoffeeReactPostprocessor
+
+      # Sprockets 2 support
+      elsif env.respond_to? :register_engine
+        env.register_engine '.cjsx', Sprockets::CoffeeReactScript
+        env.register_engine '.js.cjsx', Sprockets::CoffeeReactScript
+        env.register_preprocessor 'application/javascript', Sprockets::CoffeeReact
+        env.register_postprocessor 'application/javascript', Sprockets::CoffeeReactPostprocessor
+      end
     end
   end
 end

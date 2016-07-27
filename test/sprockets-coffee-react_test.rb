@@ -5,19 +5,19 @@ class SprocketsCoffeeReactTest < ActionDispatch::IntegrationTest
     assert_kind_of Module, Sprockets::CoffeeReact
   end
 
-  test ".js.coffee with pragma" do
+  test ".coffee.cjsx" do
     get "/assets/car1.js"
     assert_equal expected_output_file.read, @response.body.to_s
     assert_response :success
   end
 
-  test ".js.coffee.cjsx without pragma" do
+  test ".js.cjsx" do
     get "/assets/car2.js"
     assert_equal expected_output_file.read, @response.body.to_s
     assert_response :success
   end
 
-  test ".js.cjsx without pragma" do
+  test ".cjsx" do
     get "/assets/car3.js"
     assert_equal expected_output_file.read, @response.body.to_s
     assert_response :success

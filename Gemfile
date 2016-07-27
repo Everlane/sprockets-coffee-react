@@ -28,4 +28,5 @@ gem 'coffee-rails'
 gem 'jquery-rails'
 gem 'react-rails'
 gem 'sqlite3'
+
 # gem 'therubyracer'
